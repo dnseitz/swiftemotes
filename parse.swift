@@ -114,7 +114,7 @@ struct PrintNumber: Expression {
 
 struct PrintCharacter: Expression {
   func eval(context: Context) {
-    print(Character(UnicodeScalar(context.currentFrame.currentCell)!))
+    print(Character(UnicodeScalar(context.currentFrame.currentCell)!), terminator: "")
   }
 }
 
@@ -138,7 +138,8 @@ struct Sleep: Expression {
 
 struct Recycle: Expression {
   func eval(context: Context) {
-    // Not implemented yet...
+    // TODO: Implement this
+    //system("clear")
   }
 }
 

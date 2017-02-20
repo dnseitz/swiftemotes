@@ -51,10 +51,6 @@ class Frame {
     self.current = 0
   }
 
-  func pause() {
-    // Not implemented yet...
-  }
-
   func recycle() {
     // Not implemented yet...
   }

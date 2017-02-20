@@ -27,64 +27,64 @@
 // fn - declare function
 
 enum RawToken {
-  case right // >
-  case left // <
-  case increase // ^
-  case decrease // v
-  case reset // 0
-  case write // W
-  case read // R
-  case returnValue // @
-  case swap // S swap
-  case flush // L flush
-  case firstIndex // $
-  case random // %
-  case numPrint // , nprint
-  case charPrint // . cprint
-  case pause // P pause
-  case newline // N
-  case sleep // Z sleep
-  case clear // C clear
-  case comment // /
-  case loop // ? loop
-  case positive // +
-  case negative // -
-  case equals // =
-  case notEquals // !
-  case functionDeclaration // F fn
-  case functionEnd
-  case functionCall(Int)
+  case right // > \u{1F449}
+  case left // < \u{1F448}
+  case increase // ^ \u{1F44D}
+  case decrease // v \u{1F44E}
+  case reset // 0 \u{1F4A9}
+  case write // W \u{270D}
+  case read // R \u{1F4D6}
+  case returnValue // @ \u{1F300}
+  case swap // S swap \u{1F503}
+  case flush // L flush \u{1F4A6}
+  case firstIndex // $ \u{1F51A}
+  case random // % \u{1F3B2}
+  case numPrint // , nprint \u{1F4AF}
+  case charPrint // . cprint \u{1F4AC}
+  case pause // P pause \u{270B}
+  case newline // N \u{1F44C}
+  case sleep // Z sleep \u{1F4A4}
+  case clear // C clear \u{267B}
+  case comment // / \u{1F47B}
+  case loop // ? loop \u{1F517}
+  case positive // + \u{2795}
+  case negative // - \u{2796}
+  case equals // = \u{2714}
+  case notEquals // ! \u{2716}
+  case functionDeclaration // F fn \u{1F4BE}
+  case functionEnd // \u{1F44F}
+  case functionCall(Int) // \u{1F601} - \u{1F637}
 }
 
 extension RawToken {
   static func generate(from char: Character) -> RawToken? {
     switch char {
-    case ">": return .right
-    case "<": return .left
-    case "^": return .increase
-    case "v": return .decrease
-    case "0": return .reset
-    case "W": return .write
-    case "R": return .read
-    case "@": return .returnValue
-    case "S": return .swap
-    case "L": return .flush
-    case "$": return .firstIndex
-    case "%": return .random
-    case ",": return .numPrint
-    case ".": return .charPrint
-    case "P": return .pause
-    case "N": return .newline
-    case "Z": return .sleep
-    case "C": return .clear
-    case "/": return .comment
-    case "?": return .loop
-    case "+": return .positive
-    case "-": return .negative
-    case "=": return .equals
-    case "!": return .notEquals
-    case "F": return .functionDeclaration
-    case "E": return .functionEnd
+    case ">", "\u{1F449}": return .right
+    case "<", "\u{1F448}": return .left
+    case "^", "\u{1F44D}": return .increase
+    case "v", "\u{1F44E}": return .decrease
+    case "0", "\u{1F4A9}": return .reset
+    case "W", "\u{270D}": return .write
+    case "R", "\u{1F4D6}": return .read
+    case "@", "\u{1F300}": return .returnValue
+    case "S", "\u{1F503}": return .swap
+    case "L", "\u{1F4A6}": return .flush
+    case "$", "\u{1F51A}": return .firstIndex
+    case "%", "\u{1F3B2}": return .random
+    case ",", "\u{1F4AF}": return .numPrint
+    case ".", "\u{1F4AC}": return .charPrint
+    case "P", "\u{270B}": return .pause
+    case "N", "\u{1F44C}": return .newline
+    case "Z", "\u{1F4A4}": return .sleep
+    case "C", "\u{267B}": return .clear
+    case "/", "\u{1F47B}": return .comment
+    case "?", "\u{1F517}": return .loop
+    case "+", "\u{2795}": return .positive
+    case "-", "\u{2796}": return .negative
+    case "=", "\u{2714}": return .equals
+    case "!", "\u{2716}": return .notEquals
+    case "F", "\u{1F4BE}": return .functionDeclaration
+    case "E", "\u{1F44F}": return .functionEnd
     case "1": return .functionCall(1)
     case "2": return .functionCall(2)
     case "3": return .functionCall(3)
