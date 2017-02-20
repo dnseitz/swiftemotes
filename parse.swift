@@ -16,6 +16,14 @@ extension Token {
     }
   }
 
+  func isLoopCondition() -> Bool {
+    switch self.token {
+    case .positive, .negative,
+         .equals, .notEquals: return true
+    default: return false
+    }
+  }
+
   func asLoopCondition() -> LoopingCondition? {
     switch self.token {
       case .positive: return .positive
@@ -134,31 +142,53 @@ func parse(tokens: [Token]) -> [Expression]? {
     }
 
     // Loop Parsing
-    if let condition = token.asLoopCondition() {
-      if let loop = loopStack.popLast() {
-        let loopExpr = Loop(doing: loop.block, when: condition)
-        if var loop = loopStack.popLast() {
-          loop.block.add(expression: loopExpr)
-          loopStack.append(loop)
+    if case .loop = token.token {
+      loopStack.append((token, block: Block()))
+      while let token = tokenIterator.next(), loopStack.count > 0 {
+        if case .loop = token.token {
+          loopStack.append((token, block: Block()))
+          continue
+        }
+        if let condition = token.asLoopCondition() {
+          guard let loop = loopStack.popLast() else {
+            print("ERROR: Loop conditional token found without starting loop token - line: \(token.line) char: \(token.char)")
+            return nil
+          }
+          let loopExpr = Loop(doing: loop.block, when: condition)
+          if var loop = loopStack.popLast() {
+            loop.block.add(expression: loopExpr)
+            loopStack.append(loop)
+          }
+          else {
+            expressions.append(loopExpr)
+            break
+          }
         }
         else {
-          expressions.append(loopExpr)
+          if var loop = loopStack.popLast() {
+            loop.block.add(expression: token.toExpression())
+            loopStack.append(loop)
+          }
         }
       }
-      else {
-        print("ERROR: Loop conditional token found without starting loop token - line: \(token.line) char: \(token.char)")
+      guard loopStack.count == 0 else {
+        print("ERROR: File ended before end of loop declared - line \(token.line) char: \(token.char)")
+        return nil
       }
+      continue
     }
-    else if token.token == .loop {
-      loopStack.append((token, block: Block()))
+
+    guard token.isLoopCondition() else {
+      print("ERROR: Loop conditional token found without starting loop token - line: \(token.line) char: \(token.char)")
+      return nil
     }
-    else if var loop = loopStack.popLast() {
-      loop.block.add(expression: token.toExpression())
-      loopStack.append(loop)
+    guard token.token != .functionEnd else {
+      print("ERROR: Function end token found without function declaration token - line: \(token.line) char: \(token.char)")
+      return nil
     }
-    else {
-      expressions.append(token.toExpression())
-    }
+
+    // Everything else
+    expressions.append(token.toExpression())
   }
 
   if let loopToken = loopStack.popLast() {
