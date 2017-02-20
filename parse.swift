@@ -1,6 +1,6 @@
 
 protocol Expression {
-  //func eval(context: Context, next: Expression)
+  //func eval(context: Context)
 }
 
 extension Token {
@@ -10,7 +10,7 @@ extension Token {
     case .right: return MovePointer(by: 1)
     case .increase: return IncrementCell(by: 1)
     case .decrease: return IncrementCell(by: -1)
-    case .functionDeclaration: return FunctionDeclaration()
+    //case .functionDeclaration: return FunctionDeclaration()
     case .functionCall(let num): return FunctionCall(num)
     default: return Unimplemented()
     }
@@ -59,7 +59,7 @@ struct IncrementCell: Expression {
   }
 }
 
-struct FunctionDeclaration: Expression {}
+//struct FunctionDeclaration: Expression {}
 
 struct Function: Expression {
   let id: Int
@@ -165,10 +165,12 @@ func parse(tokens: [Token]) -> [Expression]? {
           }
         }
         else {
-          if var loop = loopStack.popLast() {
-            loop.block.add(expression: token.toExpression())
-            loopStack.append(loop)
+          guard var loop = loopStack.popLast() else {
+            print("ERROR: This should never happen but it did... Sorry m8 :-) - line: \(token.line) char: \(token.char)")
+            return nil
           }
+          loop.block.add(expression: token.toExpression())
+          loopStack.append(loop)
         }
       }
       guard loopStack.count == 0 else {
