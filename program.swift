@@ -9,7 +9,7 @@ struct Program {
   func run() {
     let context = Context()
     for expression in expressions {
-      //expression.eval(context)
+      expression.eval(context: context)
     }
   }
 }

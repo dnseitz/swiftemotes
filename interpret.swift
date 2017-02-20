@@ -4,10 +4,10 @@ import Foundation
 class Frame {
   private(set) var tape: [Int]
   private(set) var current: Int
-  private(set) var memory: Int
-  fileprivate var retReg: Int
+  var memory: Int
+  var retReg: Int
 
-  private(set) var currentCell: Int {
+  var currentCell: Int {
     get {
       self.lazyUpdateBounds()
       return self.tape[self.current]
@@ -51,41 +51,12 @@ class Frame {
     self.current = 0
   }
 
-  func random() {
-    self.currentCell = Int(arc4random_uniform(100))
-  }
-
-  func printNum() {
-    print("\(self.currentCell)")
-  }
-
-  func printChar() {
-    print(Character(UnicodeScalar(self.currentCell)!))
-  }
-
-  func newline() {
-    print("")
-  }
-
-  func sleep() {
-    usleep(UInt32(self.currentCell * 100000))
-  }
-
   func pause() {
     // Not implemented yet...
   }
 
   func recycle() {
     // Not implemented yet...
-  }
-
-  // Yeah... that's what it's called in the specs...
-  func write() {
-    self.memory = self.currentCell
-  }
-
-  func read(value: Int) {
-    self.currentCell = self.memory
   }
 
   private func lazyUpdateBounds() {
@@ -98,14 +69,14 @@ class Frame {
 
 class Context {
   private(set) var frames: [Frame]
-  var functions: [Function]
+  var functions: [Int: Function]
   var currentFrame: Frame {
     return self.frames.last!
   }
 
   init() {
     self.frames = [Frame(initialValue: 0)]
-    self.functions = []
+    self.functions = [:]
   }
 
   func pushFrame() {
@@ -118,4 +89,27 @@ class Context {
     let _ = self.frames.popLast()
     self.currentFrame.retReg = retValue
   }
+
+  func register(function fn: Function) {
+    if self.functions[fn.id] != nil {
+      self.error("Function \(fn.id) already registered!")
+    }
+    else {
+      self.functions[fn.id] = fn
+    }
+  }
+
+  func call(id: Int) {
+    if let fn = self.functions[id] {
+      fn.block.eval(context: self)
+    }
+    else {
+      self.error("Function \(id) not registered!")
+    }
+  }
+
+  func error(_ string: String) {
+    print("ERROR: \(string)")
+  }
+
 }

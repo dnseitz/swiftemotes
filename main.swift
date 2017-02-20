@@ -16,6 +16,8 @@ func main() {
     for expr in expressions {
       debugPrint(expr)
     }
+    let program = Program(expressions: expressions)
+    program.run()
   }
   catch {
     print(error)

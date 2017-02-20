@@ -1,6 +1,8 @@
 
+import Foundation
+
 protocol Expression {
-  //func eval(context: Context)
+  func eval(context: Context)
 }
 
 extension Token {
@@ -10,7 +12,20 @@ extension Token {
     case .right: return MovePointer(by: 1)
     case .increase: return IncrementCell(by: 1)
     case .decrease: return IncrementCell(by: -1)
-    //case .functionDeclaration: return FunctionDeclaration()
+    case .reset: return Reset()
+    case .write: return Write()
+    case .read: return Read()
+    case .returnValue: return FunctionRead()
+    case .swap: return Swap()
+    case .flush: return Flush()
+    case .firstIndex: return Return()
+    case .random: return Random()
+    case .numPrint: return PrintNumber()
+    case .charPrint: return PrintCharacter()
+    case .pause: return Pause()
+    case .newline: return NewLine()
+    case .sleep: return Sleep()
+    case .clear: return Recycle()
     case .functionCall(let num): return FunctionCall(num)
     default: return Unimplemented()
     }
@@ -36,11 +51,110 @@ extension Token {
 }
 
 struct Unimplemented: Expression {
+  func eval(context: Context) {
+    /* Do nothing */
+  }
+}
 
+struct Reset: Expression {
+  func eval(context: Context) {
+    context.currentFrame.currentCell = 0
+  }
+}
+
+struct Write: Expression {
+  func eval(context: Context) {
+    context.currentFrame.memory = context.currentFrame.currentCell
+  }
+}
+
+struct Read: Expression {
+  func eval(context: Context) {
+    context.currentFrame.currentCell = context.currentFrame.memory
+  }
+}
+
+struct FunctionRead: Expression {
+  func eval(context: Context) {
+    context.currentFrame.currentCell = context.currentFrame.retReg
+  }
+}
+
+struct Swap: Expression {
+  func eval(context: Context) {
+    let temp = context.currentFrame.memory
+    context.currentFrame.memory = context.currentFrame.currentCell
+    context.currentFrame.currentCell = temp
+  }
+}
+
+struct Flush: Expression {
+  func eval(context: Context) {
+    context.currentFrame.flush()
+  }
+}
+
+struct Return: Expression {
+  func eval(context: Context) {
+    context.currentFrame.ret()
+  }
+}
+
+struct Random: Expression {
+  func eval(context: Context) {
+    context.currentFrame.currentCell = Int(arc4random_uniform(100))
+  }
+}
+
+struct PrintNumber: Expression {
+  func eval(context: Context) {
+    print(context.currentFrame.currentCell, terminator: "")
+  }
+}
+
+struct PrintCharacter: Expression {
+  func eval(context: Context) {
+    print(Character(UnicodeScalar(context.currentFrame.currentCell)!))
+  }
+}
+
+struct Pause: Expression {
+  func eval(context: Context) {
+    readLine()
+  }
+}
+
+struct NewLine: Expression {
+  func eval(context: Context) {
+    print()
+  }
+}
+
+struct Sleep: Expression {
+  func eval(context: Context) {
+    usleep(UInt32(context.currentFrame.currentCell * 100000))
+  }
+}
+
+struct Recycle: Expression {
+  func eval(context: Context) {
+    // Not implemented yet...
+  }
 }
 
 enum LoopingCondition {
   case positive, negative, equalZero, notEqualZero
+}
+
+extension LoopingCondition {
+  func isMet(`for` value: Int) -> Bool {
+    switch self {
+    case .positive: return value > 0
+    case .negative: return value < 0
+    case .equalZero: return value == 0
+    case .notEqualZero: return value != 0
+    }
+  }
 }
 
 struct MovePointer: Expression {
@@ -48,6 +162,10 @@ struct MovePointer: Expression {
 
   init(by amount: Int) {
     self.amount = amount
+  }
+
+  func eval(context: Context) {
+    context.currentFrame.movePointer(by: self.amount)
   }
 }
 
@@ -57,9 +175,27 @@ struct IncrementCell: Expression {
   init(by amount: Int) {
     self.amount = amount
   }
+
+  func eval(context: Context) {
+    context.currentFrame.incrementCell(by: self.amount)
+  }
 }
 
-//struct FunctionDeclaration: Expression {}
+struct Loop: Expression {
+  let condition: LoopingCondition
+  let block: Block
+
+  init(doing block: Block, when condition: LoopingCondition) {
+    self.block = block
+    self.condition = condition
+  }
+
+  func eval(context: Context) {
+    while !self.condition.isMet(for: context.currentFrame.currentCell) {
+      self.block.eval(context: context)
+    }
+  }
+}
 
 struct Function: Expression {
   let id: Int
@@ -69,6 +205,10 @@ struct Function: Expression {
     self.id = id
     self.block = block
   }
+
+  func eval(context: Context) {
+    context.register(function: self)
+  }
 }
 
 struct FunctionCall: Expression {
@@ -76,6 +216,12 @@ struct FunctionCall: Expression {
 
   init(_ id: Int) {
     self.id = id
+  }
+
+  func eval(context: Context) {
+    context.pushFrame()
+    context.call(id: self.id)
+    context.popFrame()
   }
 }
 
@@ -89,15 +235,11 @@ struct Block: Expression {
   mutating func add(expression: Expression) {
     self.expressions.append(expression)
   }
-}
 
-struct Loop: Expression {
-  let condition: LoopingCondition
-  let block: Block
-
-  init(doing block: Block, when condition: LoopingCondition) {
-    self.block = block
-    self.condition = condition
+  func eval(context: Context) {
+    for expr in self.expressions {
+      expr.eval(context: context)
+    }
   }
 }
 
@@ -180,7 +322,7 @@ func parse(tokens: [Token]) -> [Expression]? {
       continue
     }
 
-    guard token.isLoopCondition() else {
+    guard !token.isLoopCondition() else {
       print("ERROR: Loop conditional token found without starting loop token - line: \(token.line) char: \(token.char)")
       return nil
     }

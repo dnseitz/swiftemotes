@@ -57,14 +57,6 @@ enum RawToken {
 }
 
 extension RawToken {
-  func isLoopCondition() -> Bool {
-    switch self {
-    case .positive, .negative,
-         .equals, .notEquals: return true
-    default: return false
-    }
-  }
-
   static func generate(from char: Character) -> RawToken? {
     switch char {
     case ">": return .right
@@ -164,15 +156,22 @@ func getTokens(string: String) -> [Token] {
   var lineNum = 1
   var charNum = 1
   var tokens = [Token]()
+  var inComment = false
 
   for char in string.characters {
     if char == "\n" {
       lineNum += 1
       charNum = 0
+      inComment = false
     }
     if let rawToken = RawToken.generate(from: char) {
       let token = Token(line: lineNum, char: charNum, token: rawToken)
-      tokens.append(token)
+      if case .comment = rawToken {
+        inComment = !inComment
+      }
+      if !inComment {
+        tokens.append(token)
+      }
     }
     charNum += 1
   }
