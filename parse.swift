@@ -250,7 +250,6 @@ func parse(tokens: [Token]) -> [Expression]? {
   var tokenIterator = tokens.makeIterator()
 
   while let token = tokenIterator.next() {
-    print("Parsing: \(token)")
     // Function parsing
     if case .functionDeclaration = token.token {
       var block = Block()
@@ -264,7 +263,6 @@ func parse(tokens: [Token]) -> [Expression]? {
         return nil
       }
       while let token = tokenIterator.next() {
-        print("Parsing: \(token)")
         guard RawToken.functionDeclaration != token.token else {
           print("ERROR: Function declarations not allowed within a function - line \(token.line) char: \(token.char)")
           return nil

@@ -13,9 +13,6 @@ func main() {
     let stringContents = String(data: contents, encoding: .utf8)!
     let tokens = getTokens(string: stringContents)
     let expressions = parse(tokens: tokens)!
-    for expr in expressions {
-      debugPrint(expr)
-    }
     let program = Program(expressions: expressions)
     program.run()
   }
