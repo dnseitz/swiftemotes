@@ -9,3 +9,4 @@ interpreter will be able to parse emotes
   - Evaluate function declarations before anything else so functions can be called before 
     they are declared
   - Implement emoticons for function calls rather than numbers.
+  - Fancy GUI?!!?
